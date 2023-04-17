@@ -2,7 +2,7 @@
  * Project Name: MCP4725_PICO
  * File: main.cpp
  * Description: example cpp file for MCP4725 DAC library
- * Generate a square wave
+ * Generate a square wave 100Hz
  * See URL for full details.
  * URL: https://github.com/gavinlyonsrepo/MCP4725_PICO
  */
