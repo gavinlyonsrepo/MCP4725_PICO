@@ -20,10 +20,9 @@ Overview
 * Name: MCP4725_PICO
 * Description:
 
-Library Driver for  DAC  sensor,  MCP4725 modules,
+Library Driver for  MCP4725 DAC modules,
 for Raspberry pi PICO RP2040. 
 
-MCP4725 I2C , 12-Bit Digital-to-Analog Converter with EEPROM Memory.
 The MCP4725 is a low-power, high accuracy, single
 channel, 12-bit buffered voltage output Digital-to-
 Analog Converter (DAC) with nonvolatile memory
@@ -43,7 +42,6 @@ Examples
 There are eight example files.
 The example files are in example folder. To build the one you want, edit the Cmaketxt file add_executable(${PROJECT_NAME} section, comment in one example file path and one ONLY. 
 
-
 | Path Name | Function |
 | --- | --- |
 | isConnected | Check I2C connection continuously, useful for debugging I2C bus issues |
@@ -60,9 +58,11 @@ The example files output Data to the PC serial port using printf,  default setti
 Software
 ---------------------
 **Constructor**
-The constructor has one parameter. The reference  voltage of the DAC.
 
-**I2C settings**
+The constructor has one parameter. The reference voltage of the DAC(Vref)
+This setting can be read or changed later on.
+
+**Begin method & I2C**
 
 In the begin method the user can pass in a number of I2C related arguments.
 In the header file it is also possible to turn on I2C debugging messages(_serialDebug flag) and
@@ -72,10 +72,42 @@ adjust the timeout of the I2C functions if necessary.
 | --- |  --- | 
 | I2C address 8-bit,  0x6? 6 possible values see hardware section and enum  | 0x60 |
 | I2C instance of port IC20 or I2C1 | I2C1 |
-| I2C Clk speed mode ikn  kbits, 100, 400 or 3400(not tested) | 100 |
+| I2C Clk speed mode in  kbits, 100, 400 or 3400(not tested) | 100 |
 | I2C data line | GPIO 18 |
 | I2C clock Line | GPIO 19 |
 
+**Set Voltage Input code**
+The user can set the Voltage output using a voltage or an input code.
+The input code is calculated using following. Example :: 
+
+0. Required voltage output of 1.65 V
+1. Voltage reference of 3.3 Volts 
+2. DAC resolution of 2^12 (4096) 
+3. The Din or input code would be  2048.
+
+![image](https://github.com/gavinlyonsrepo/MCP4725_PICO/blob/main/extra/images/inputcode.jpg)
+
+**EEPROM**
+
+The Device can store a voltage output value and power mode status in its onboard EEPROM.
+In the event of a software reset or power loss, The device will read EEPROM and restore these settings. If the power supply voltage is less than the POR(Power-On-Reset) thresh-
+old (VPOR = 2V, typical), all circuits are disabled and there will be no DAC output. . 
+When Vdd increases above Vpor device "resets" and gets data from EEPROM(stored voltage and power on conditions).
+
+![image](https://github.com/gavinlyonsrepo/MCP4725_PICO/blob/main/extra/images/eeprom.jpg)
+
+**Power modes**
+
+The device has 4  modes. Normal and 3 power down modes. During the power-down mode, the device draws about 60 nA (typical).
+
+![image](https://github.com/gavinlyonsrepo/MCP4725_PICO/blob/main/extra/images/powerdown.jpg)
+
+**General call method**
+
+The general call address (0x00) is for addressing every device connected to the I2C-bus at the same time. This command may potentially cause issues with other slave devices on the I2C bus.
+The MCP4725 has two possible arguments here , Reset and wakeup. Reset is a software reset and will result in EEPROM values being set. Wakeup is to exit a power down mode and return to normal.
+
+![image](https://github.com/gavinlyonsrepo/MCP4725_PICO/blob/main/extra/images/call.jpg)
 
 Hardware
 ---------------------
@@ -95,16 +127,14 @@ Hardware
 ^^This pin can be tied to VSS or VDD,
 or can be actively driven by the digital logic levels. The logic state of this
 pin determines what the A0 bit of the I2C address bits should be. 
-The address is also effected  which type of chip. There are 3 variant's thus
-6 choice's of I2C address.
+The address is also effected by which variant of chip. There are 3 variant's thus
+6 choice's of I2C address
 
-The module tested has 2 X 4.7Kohm  pull up resistors on I2C bus and a bypass capacitor.
+![image](https://github.com/gavinlyonsrepo/MCP4725_PICO/blob/main/extra/images/hardware.jpg)
+
+The module tested has 2 X 4.7 kOhm  pull up resistors on I2C bus and a bypass capacitor.
 An additional 10 µF capacitor (tantalum) in parallel is also recommended to
 further attenuate high frequency noise.
-
-Vpor(Power-On-Reset (POR)) = 2v. 
-If Vdd fails below 2v, all circuits & no DAC output disabled, 
-when Vdd increases above Vpor device "resets" and gets data from EEPROM(stored voltage and power on conditions)
 
 
 Output
