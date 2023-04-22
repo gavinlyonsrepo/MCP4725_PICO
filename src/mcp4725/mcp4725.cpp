@@ -1,28 +1,31 @@
-/*
- * Project Name: MCP4725_PICO
- * File: MCP4725.cpp
- * Description: cpp file for MCP4725 DAC library
- * See URL for full details.
- * URL: https://github.com/gavinlyonsrepo/MCP4725_PICO
- */
+/*!
+	@file     mcp4725.cpp
+	@author   Gavin Lyons
+	@brief    MCP4725 DAC library cpp file.
+*/
 
 #include "../include/mcp4725/mcp4725.hpp"
 
-// Constructor MCP4725()
 
-MCP4725::MCP4725(float refV)
+/*!
+	@brief Constructor for class MCP4725_PIC0
+	@param refV The the reference voltage to be set in Volts.
+*/
+MCP4725_PICO::MCP4725_PICO(float refV)
 {
 	setReferenceVoltage(refV);
 }
 
-// Desc : Begin() Init & config i2c
-// Param1 : enum MCP4725_I2C_Addr_e : I2C address 8 bit address 0x6?
-// Param2 : i2c_inst_t* : I2C instance of port, IC20 or I2C1
-// Param3 : uint16_t : I2C Bus Clock speed in Kbit/s. see 7.1 datasheet
-// Param4 : uint8_t : I2C Data pin
-// Param5 : uint8_t : I2C Clock pin
-// Returns : bool :true if success , false for failure
-bool MCP4725::begin(MCP4725_I2C_Addr_e addr, i2c_inst_t* i2c_type, uint16_t CLKspeed, uint8_t SDApin, uint8_t SCLKpin)
+/*!
+	@brief Init & config i2c
+	@param addr I2C address 8 bit address 0x6?.
+	@param i2c_type I2C instance of port, IC20 or I2C1.
+	@param CLKspeed I2C Bus Clock speed in Kbit/s. see 7.1 datasheet
+	@param SDA I2C Data GPIO
+	@param SCLK I2C Clock GPIO
+	@return  true if success , false for failure
+*/
+bool MCP4725_PICO::begin(MCP4725_I2C_Addr_e addr, i2c_inst_t* i2c_type, uint16_t CLKspeed, uint8_t SDApin, uint8_t SCLKpin)
 {
 	uint8_t rxData = 0;
 
@@ -42,9 +45,21 @@ bool MCP4725::begin(MCP4725_I2C_Addr_e addr, i2c_inst_t* i2c_type, uint16_t CLKs
 	return isConnected();
 }
 
-// Desc :: Checks if DAC is connected
-// return  true if DAC is connected , false if not
-bool MCP4725::isConnected()
+/*!
+	@brief Switch off the  I2C interface and return I2C GPIO to default state
+*/
+void MCP4725_PICO::deinitI2C()
+{
+	gpio_set_function(_SDataPin, GPIO_FUNC_NULL);
+	gpio_set_function(_SClkPin, GPIO_FUNC_NULL);
+	i2c_deinit(_i2c); 	
+}
+
+/*!
+	@brief Checks if DAC is connected. 
+	@return true if DAC is connected , false if not
+*/
+bool MCP4725_PICO::isConnected()
 {
 	int ReturnCode = 0;
 	uint8_t rxData = 0;
@@ -61,9 +76,12 @@ bool MCP4725::isConnected()
 	return true;
 }
 
-// Desc set reference voltage
-// Parameters 1 :: float value to set reference voltage called from constructor
-void MCP4725::setReferenceVoltage(float voltage)
+/*!
+	@brief Sets the reference voltage. 
+	@param voltage the reference voltage to be set, called from constructor.
+*/
+
+void MCP4725_PICO::setReferenceVoltage(float voltage)
 {
 	if (voltage == 0)
 		_refVoltage = MCP4725_REFERENCE_VOLTAGE;
@@ -73,17 +91,20 @@ void MCP4725::setReferenceVoltage(float voltage)
 	_bitsPerVolt = (float)MCP4725_STEPS / _refVoltage;
 }
 
-// Desc : Return reference voltage
-float MCP4725::getReferenceVoltage(){return _refVoltage;}
+/*!
+	@brief Gets the reference voltage. 
+	@return The reference voltage in volts.
+*/
+float MCP4725_PICO::getReferenceVoltage(){return _refVoltage;}
 
-// Desc setInputCode : Set voltage out based on DAC input code
-// Parameter 1 : inputcode : uint16_t : 0 to MCP4725_MAX_VALUE voltage out
-// Parameter 2 : mode :  enum  MCP4725_CmdType_e
-//	see enum descriptions
-// Parameter 3 : power type : enum  : MCP4725_PowerDownType_e
-//	see enum descriptions
-// return bool : output of writeCommand true for success, false for failure
-bool MCP4725::setInputCode(uint16_t InputCode, MCP4725_CmdType_e mode, MCP4725_PowerDownType_e powerType)
+/*!
+	@brief Set voltage out based on DAC input code. 
+	@param InputCode 0 to MCP4725_MAX_VALUE.
+	@param mode MCP4725DAC mode, see enum MCP4725_CmdType_e.
+	@param PowerType MCP4725DAC power type, see enum MCP4725_PowerType_e
+	@return  output of writeCommand method, true for success, false for failure.
+*/
+bool MCP4725_PICO::setInputCode(uint16_t InputCode, MCP4725_CmdType_e mode, MCP4725_PowerDownType_e powerType)
 {
 	if (_safetyCheck  == true)
 	{
@@ -94,14 +115,14 @@ bool MCP4725::setInputCode(uint16_t InputCode, MCP4725_CmdType_e mode, MCP4725_P
 	return writeCommand(InputCode, mode, powerType);
 }
 
-// Desc setInputCode : Set voltage out based on voltage input
-// Parameter 1 : voltage: float : 0 to_MCP4725_REFERENCE_VOLTAGE, voltage out
-// Parameter 2 : mode :  enum  MCP4725_CmdType_e
-//	-see enum descriptions
-// Parameter 3 : power type : enum  : MCP4725_PowerDownType_e
-//	-see enum descriptions
-// return bool : output of writeCommand true for success, false for failure
-bool MCP4725::setVoltage(float voltage, MCP4725_CmdType_e mode, MCP4725_PowerDownType_e powerType)
+/*!
+	@brief Set voltage out based on voltage input in volts. 
+	@param voltage  0 to_MCP4725_REFERENCE_VOLTAGE, voltage out
+	@param mode MCP4725DAC mode, see enum MCP4725_CmdType_e.
+	@param PowerType MCP4725DAC power type, see enum MCP4725_PowerType_e
+	@return  output of writeCommand method, true for success, false for failure.
+*/
+bool MCP4725_PICO::setVoltage(float voltage, MCP4725_CmdType_e mode, MCP4725_PowerDownType_e powerType)
 {
 	uint16_t voltageValue = 0;
 
@@ -125,9 +146,11 @@ bool MCP4725::setVoltage(float voltage, MCP4725_CmdType_e mode, MCP4725_PowerDow
 }
 
 
-// Desc :: get current DAC InputCode from DAC register
-// Returns : uint16_t  : DAC InputCode :or 0xFFFF if I2C error
-uint16_t MCP4725::getInputCode()
+/*!
+	@brief get current DAC InputCode from DAC register
+	@return  DAC InputCode :or 0xFFFF if I2C error
+*/
+uint16_t MCP4725_PICO::getInputCode()
 {
 	uint16_t inputCode = readRegister(MCP4725_ReadDACReg);
 	// InputCode = D11,D10,D9,D8,D7,D6,D5,D4, D3,D2,D1,D0,x,x,x,x
@@ -138,9 +161,12 @@ uint16_t MCP4725::getInputCode()
 		return inputCode; // i2c Error return 0xFFFF
 }
 
-// Desc :: get DAC inputCode from DAC register & convert to volts
-// Returns : float : voltage or 0xFFFF if I2C error
-float MCP4725::getVoltage()
+
+/*!
+	@brief  get DAC inputCode from DAC register & convert to volts
+	@return DAC voltage or 0xFFFF if I2C error
+*/
+float MCP4725_PICO::getVoltage()
 {
 	float InputCode = getInputCode();
 	if (InputCode != MCP4725_ERROR) 
@@ -149,9 +175,11 @@ float MCP4725::getVoltage()
 		return InputCode; // i2c Error return 0xFFFF
 }
 
-// Desc :: Read DAC inputCode from EEPROM
-// Returns : uint16_t : stored EEPROM value or 0xFFFF if I2C error
-uint16_t MCP4725::getStoredInputCode()
+/*!
+	@brief Read DAC inputCode from EEPROM
+	@return  stored EEPROM inputcode value or 0xFFFF if I2C error
+*/
+uint16_t MCP4725_PICO::getStoredInputCode()
 {
 	uint16_t inputCode = readRegister(MCP4725_ReadEEPROM); 
 	//InputCode = x,PD1,PD0,x,D11,D10,D9,D8, D7,D6,D5,D4,D3,D2,D1,D0
@@ -162,9 +190,12 @@ uint16_t MCP4725::getStoredInputCode()
 		return inputCode; // i2c Error return 0xFFFF
 }
 
-// Desc :: Read stored DAC InputCode from EEPROM & convert to voltage
-// Returns : float : stored EEPROM voltage  or 0xFFFF if I2C error
-float MCP4725::getStoredVoltage()
+
+/*!
+	@brief Read stored DAC InputCode from EEPROM & convert to voltage
+	@return  stored EEPROM voltage  or 0xFFFF if I2C error
+*/
+float MCP4725_PICO::getStoredVoltage()
 {
 	float InputCode = getStoredInputCode();
 
@@ -174,11 +205,12 @@ float MCP4725::getStoredVoltage()
 		return InputCode;
 }
 
-
-// Desc Return current power type from DAC register
-// Returns : uint16_t : power type or 0xFFFF if I2C error
-// Power type corresponds to enum MCP4725_PowerDownType_e
-uint16_t MCP4725::getPowerType()
+/*!
+	@brief Get current power type from DAC register
+	@return  power type or 0xFFFF if I2C error
+	@note Power type corresponds to enum MCP4725_PowerDownType_e
+*/
+uint16_t MCP4725_PICO::getPowerType()
 {
 	uint16_t powerTypeValue = readRegister(MCP4725_ReadSettings); 
 	//powerTypeValue = BSY,POR,xx,xx,xx,PD1,PD0,xx
@@ -191,10 +223,13 @@ uint16_t MCP4725::getPowerType()
 	}
 }
 
-// Desc Return stored power type from EEPROM
-// Returns : uint16_t : power type or 0xFFFF if I2C error
-// Power type corresponds to enum MCP4725_PowerDownType_e
-uint16_t MCP4725::getStoredPowerType()
+
+/*!
+	@brief Get stored power type from EEPROM
+	@return  EEPROM power type or 0xFFFF if I2C error
+	@note Power type corresponds to enum MCP4725_PowerDownType_e
+*/
+uint16_t MCP4725_PICO::getStoredPowerType()
 {
 	uint16_t powerTypeValue = readRegister(MCP4725_ReadEEPROM); 
 	//powerTypeValue = x,PD1,PD0,xx,D11,D10,D9,D8,D7,D6,D5,D4,D3,D2,D1,D0
@@ -209,10 +244,13 @@ uint16_t MCP4725::getStoredPowerType()
 	}
 }
 
-// Desc Return EEPROM writing status from DAC register
-// Returns 1 for completed or 0( busy or I2C error)
-// Note The BSY bit is low (during the EEPROM writing)
-bool MCP4725::getEEPROMBusyFlag()
+
+/*!
+	@brief get EEPROM writing status from DAC register
+	@return  1 for completed or 0( busy or I2C error)
+	@note The BSY bit is low (during the EEPROM writing)
+*/
+bool MCP4725_PICO::getEEPROMBusyFlag()
 {
 	uint16_t registerValue = readRegister(MCP4725_ReadSettings); 
 	//register value = BSY,POR,xx,xx,xx,PD1,PD0,xx
@@ -227,14 +265,15 @@ bool MCP4725::getEEPROMBusyFlag()
 	}
 }
 
-// Desc Writes value to DAC register or EEPROM
-// Parameter 1 : inputCode : uint16_t : 0 to MCP4725_MAX_VALUE voltage out
-// Parameter 2 : mode :  enum  MCP4725_CmdType_e
-//	see enum descriptions
-// Parameter 3 : power type : enum  : MCP4725_PowerDownType_e
-//	see enum descriptions
-// return bool : output of writeCommand, true for success, false for failure
-bool MCP4725::writeCommand(uint16_t inputCode, MCP4725_CmdType_e mode, MCP4725_PowerDownType_e powerType)
+
+/*!
+	@brief Writes data to DAC register or EEPROM 
+	@param inputCode  0 to MCP4725_MAX_VALUE input code
+	@param mode MCP4725DAC mode, see enum MCP4725_CmdType_e.
+	@param PowerType MCP4725 power type, see enum MCP4725_PowerType_e
+	@return   true for success, false for failure.
+*/
+bool MCP4725_PICO::writeCommand(uint16_t inputCode, MCP4725_CmdType_e mode, MCP4725_PowerDownType_e powerType)
 {
 	uint8_t dataBuffer[3];
 	uint8_t lowByte = 0;
@@ -300,10 +339,12 @@ bool MCP4725::writeCommand(uint16_t inputCode, MCP4725_CmdType_e mode, MCP4725_P
 	return true;
 }
 
-// Desc Read DAC register
-// Parameters: enum Datatype value 1 3 or 5
-// Return Value: uint16_t : requested value of read or type 0XFFFF if I2c error
-uint16_t MCP4725::readRegister(MCP4725_ReadType_e readType)
+/*!
+	@brief Read DAC register 
+	@param mode MCP4725DAC datatype 1 3 or 5, see enum MCP4725_ReadType_e.
+	@return  Requested value of read or type 0XFFFF if I2c error
+*/
+uint16_t MCP4725_PICO::readRegister(MCP4725_ReadType_e readType)
 {
 	uint16_t dataWord = readType;
 	uint8_t dataBuffer[6];
@@ -351,25 +392,43 @@ uint16_t MCP4725::readRegister(MCP4725_ReadType_e readType)
  	}
 }
 
-// Setter for _serialDebug flag
-void MCP4725::setSerialDebugFlag(bool onOff){_serialDebug = onOff;}
-// Getter for _serialDebug flag
-bool MCP4725::getSerialDebugFlag(void){return _serialDebug;}
-// Setter for _safetyCheck flag
-void MCP4725::setSafetyCheckFlag(bool onOff){_safetyCheck = onOff;}
-// Getter for _safetyCheck flag
-bool MCP4725::getSafetyCheckFlag(){return _safetyCheck;}
 
-// Desc :: General Call, name from datasheet section 7.3
-// --Reset MCP4725 & upload data from EEPROM to DAC register
-//   Immediately after reset event, uploads contents of EEPROM into the DAC reg.
-// --Wake up & upload value from DAC register, 
-//   Current power-down bits are set to normal, EEPROM power-down bit are not affected
-// Parameters :: enum MCP4725_GeneralCallType_e tow inputs , reset OR wakup
-// Return :: true on success, false on I2c error OR wrong input(GeneralCallAddress)
-// Notes General Call command may affect other I2C slaves, sends out 0x00 on I2c Bus
+/*!
+	@brief  Setter for serial debug flag 
+	@param onOff Turns or or off the serial debug flag
+*/
+void MCP4725_PICO::setSerialDebugFlag(bool onOff){_serialDebug = onOff;}
 
-bool MCP4725::GeneralCall(MCP4725_GeneralCallType_e typeCall){
+/*!
+	@brief Gets the serial Debug flag value
+	@return The serial Debug flag value
+*/
+bool MCP4725_PICO::getSerialDebugFlag(void){return _serialDebug;}
+
+/*!
+	@brief  Setter for safety Check flag 
+	@param onOff Turns or or off the safety check  flag
+*/
+void MCP4725_PICO::setSafetyCheckFlag(bool onOff){_safetyCheck = onOff;}
+
+/*!
+	@brief Gets the safety Check flag value
+	@return The safety Check flag value
+*/
+bool MCP4725_PICO::getSafetyCheckFlag(){return _safetyCheck;}
+
+
+/*!
+	@brief General Call, name from datasheet section 7.3
+	@param typeCall Reset or wakeup see MCP4725_GeneralCallType_e.
+	@return  True on success, false on I2c error OR wrong input(GeneralCallAddress)
+	@note  
+		1. Reset MCP4725 & upload data from EEPROM to DAC register.
+		Immediately after reset event, uploads contents of EEPROM into the DAC reg.
+		2. Wake up & upload value from DAC register, 
+		Current power-down bits are set to normal, EEPROM power-down bit are not affected
+*/
+bool MCP4725_PICO::GeneralCall(MCP4725_GeneralCallType_e typeCall){
 
 	if (typeCall == MCP4725_GeneralCallAddress) {return false;}
 	
@@ -393,4 +452,5 @@ bool MCP4725::GeneralCall(MCP4725_GeneralCallType_e typeCall){
 		return true;
  	}
 }
-// EOF
+
+// ------------------ EOF ------------------------

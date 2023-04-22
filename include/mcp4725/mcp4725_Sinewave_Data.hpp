@@ -1,10 +1,8 @@
-/*
- * Project Name: MCP4725_PICO
- * File: MCP4725.hpp
- * Description: Data file for MCP4725 Sinewave generation 
- * See URL for full details.
- * URL: https://github.com/gavinlyonsrepo/MCP4725_PICO
- */
+/*!
+	@file     mcp4725_Sinewave_Data.hpp
+	@author   Gavin Lyons
+	@brief    Data header file for MCP4725 Sinewave generation. 
+*/
 
 #ifndef __MCP4725_SINEWAVE_H
 #define __MCP4725_SINEWAVE_H

@@ -1,24 +1,21 @@
-/*
- * Project Name: MCP4725_PICO
- * File: main.cpp
- * Description: example cpp file for MCP4725 DAC library
- * This file carries out some set voltage tests
- * See URL for full details.
- * URL: https://github.com/gavinlyonsrepo/MCP4725_PICO
- */
+/*!
+	@file     main.cpp
+	@author   Gavin Lyons
+	@brief   Example cpp file for MCP4725 DAC library, SetVoltage.
+	@note
+	This file carries out some set voltage tests.
+	-# Test 1 setInputCode function 4096 vout = 3.3V.
+	-# Test 2 setInputCode function  2048 Vout = 1.65V.
+	-# Test 3 setVoltage function 2.0 , vout 2.0V.
+	-# Test 4 setVoltage function 0.800 , vout = 800mV.
+	
+	Example input code calculation .
+	PICO Vref = 3.3 , MCP4725A0 , resolution = 2^12 = 4096.
+	Note Vout = (Vref X input code) / Resolution .
+	Vout = (3.3 X  inputcode)/ 4096.
+	eg for input code  2048 -> Vout = (3.3 X 2048) /4096 = 1.65 V.
+*/
 
-//----------------------------------------------------------------
-// Test 1 setInputCode function 4096 vout = 3.3V
-// Test 2 setInputCode function  2048 Vout = 1.65V
-// Test 3 setVoltage function 2.0 , vout 2.0V
-// Test 4 setVoltage function 0.800 , vout = 800mV
-//----------------------------------------------------------------
-
-// Example input code calculation 
-// PICO Vref = 3.3 , MCP4725A0 , resolution = 2^12 = 4096
-// Note Vout = (Vref X input code) / Resolution 
-// Vout = (3.3 X  inputcode)/ 4096
-// eg for input code  2048 -> Vout = (3.3 X 2048) /4096 = 1.65 V
 
 // Libraries
 #include <stdio.h>
@@ -30,8 +27,12 @@
 #define DAC_REF_VOLTAGE 3.3  // Volts DAC supply-reference voltage
 
 // Setup
-MCP4725 myDAC(DAC_REF_VOLTAGE);
+MCP4725_PICO myDAC(DAC_REF_VOLTAGE);
 
+/*!
+	@brief The MAIN loop function, setVoltage example file
+	@return  Program Exit code
+*/
 int main () {
 	// local variable declaration:
 	busy_wait_ms(500);

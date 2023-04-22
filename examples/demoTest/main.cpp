@@ -1,28 +1,25 @@
-/*
- * Project Name: MCP4725_PICO
- * File: main.cpp
- * Description: example cpp file for MCP4725 DAC library
- * This file carries our a series of tests to demonstrate fetaures
- * such as Power down reset wakeup and EEPROM data save.
- * Output to Serial monitor and multimeter on Vout of DAC.
- * See URL for full details.
- * URL: https://github.com/gavinlyonsrepo/MCP4725_PICO
- */
-
-//----------------------------------------------------------------
-// Test 0 print settings 
-// Test 1 set voltage to Vmax with power ON mode   , Vout = 3.3 V
-// Test 2 set voltage to 1.65  with power off mode , Vout = 0.0 V
-// Test 3 set voltage to 900mV with power off mode , Vout = 0.0 V
-// Test 4 wake up device,                            Vout = 900m V
-// Test 5a set voltages to Vmax with power ON mode,  Vout =  3.3 V
-// Test 5b print settings 
-// Test 6a Set Voltage and power mode on in the EEPROM,  Vout = 1.0 V
-// Test 6b set voltage to Vmax with power ON mode        Vout = 3.3 V
-// Test 6c Reset device & Vout will revert EEPROM in 6a, Vout = 1.0 V
-// Test 7 Clear the EEPROM,                              Vout = 0.0 V
-// Test 7b print settings 
-//------------------------------------------------------------------
+/*!
+	@file     main.cpp
+	@author   Gavin Lyons
+	@brief    Example cpp file for MCP4725 DAC library , demoTest.
+	@note
+	This file carries our a series of tests to demonstrate features.
+	Such as Power down reset wakeup and EEPROM data save.
+	Output to Serial monitor and multimeter on Vout of DAC.
+	
+	-# Test 0 print settings.
+	-# Test 1 set voltage to Vmax with power ON mode   , Vout = 3.3 V.
+	-# Test 2 set voltage to 1.65  with power off mode , Vout = 0.0 V.
+	-# Test 3 set voltage to 900mV with power off mode , Vout = 0.0 V.
+	-# Test 4 wake up device,                            Vout = 900m V.
+	-# Test 5a set voltages to Vmax with power ON mode,  Vout =  3.3 V.
+	-# Test 5b print settings.
+	-# Test 6a Set Voltage and power mode on in the EEPROM,  Vout = 1.0 V.
+	-# Test 6b set voltage to Vmax with power ON mode        Vout = 3.3 V.
+	-# Test 6c Reset device & Vout will revert EEPROM in 6a, Vout = 1.0 V.
+	-# Test 7 Clear the EEPROM,                              Vout = 0.0 V.
+	-# Test 7b print settings.
+*/
 
 // Libraries
 #include <stdio.h>
@@ -33,13 +30,16 @@
 #define DAC_REF_VOLTAGE 3.3  // Volts DAC supply-reference voltage
 
 // Setup
-MCP4725 myDAC(DAC_REF_VOLTAGE);
+MCP4725_PICO myDAC(DAC_REF_VOLTAGE);
 uint16_t TestCount = 0;
 
 // Functions
 void printDACSettings(void);
 
-// Main
+/*!
+	@brief The MAIN loop function, demoTest example file
+	@return  Program Exit code
+*/
 int main () {
 	// Serial port setup
 	busy_wait_ms(500);

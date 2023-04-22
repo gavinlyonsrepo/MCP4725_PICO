@@ -1,11 +1,10 @@
-/*
- * Project Name: MCP4725_PICO
- * File: main.cpp
- * Description: example cpp file for MCP4725 DAC library
- * generated a triangle waveform for MCP4725 75 Hz
- * See URL for full details.
- * URL: https://github.com/gavinlyonsrepo/MCP4725_PICO
- */
+/*!
+	@file     main.cpp
+	@author   Gavin Lyons
+	@brief Example cpp file for MCP4725 DAC library, triangleWave.
+	@note Generated a triangle waveform for MCP4725 75 Hz.
+
+*/
 
 // Libraries
 #include <stdio.h>
@@ -16,10 +15,14 @@
 #define DAC_REF_VOLTAGE 3.3  // Volts DAC supply-reference voltage
 
 // Setup
-MCP4725 myDAC(DAC_REF_VOLTAGE);
+MCP4725_PICO  myDAC(DAC_REF_VOLTAGE);
 int16_t smoothing = 50;
 int16_t counter = 0;
 
+/*!
+	@brief The MAIN loop function, squareWave example file
+	@return  Program Exit code
+*/
 int main () {
 	// local variable declaration:
 	busy_wait_ms(500);

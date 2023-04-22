@@ -1,11 +1,10 @@
-/*
- * Project Name: MCP4725_PICO
- * File: main.cpp
- * Description: example cpp file for MCP4725 DAC library
- * generate random data  for MCP4725 
- * See URL for full details.
- * URL: https://github.com/gavinlyonsrepo/MCP4725_PICO
- */
+/*!
+	@file     main.cpp
+	@author   Gavin Lyons
+	@brief    Example cpp file for MCP4725 DAC library, random.
+	@note     Generate random data  for MCP4725. 
+*/
+
 
 // Libraries
 #include <stdio.h>
@@ -16,8 +15,12 @@
 #define DAC_REF_VOLTAGE 3.3  // Volts DAC supply-reference voltage
 
 // Setup
-MCP4725 myDAC(DAC_REF_VOLTAGE);
+MCP4725_PICO myDAC(DAC_REF_VOLTAGE);
 
+/*!
+	@brief The MAIN loop function, random example file
+	@return  Program Exit code
+*/
 int main () {
 	// local variable declaration:
 	busy_wait_ms(500);

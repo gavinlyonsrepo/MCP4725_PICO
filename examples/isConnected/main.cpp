@@ -1,26 +1,27 @@
-/*
- * Project Name: MCP4725_PICO
- * File: main.cpp
- * Description: example cpp file for MCP4725 DAC library
- * This file carries Connection test to see if DAC on the bus
- * Output to Serial monitor 38400 baud rate
- * See URL for full details.
- * URL: https://github.com/gavinlyonsrepo/MCP4725_PICO
- */
+/*!
+	@file     main.cpp
+	@author   Gavin Lyons
+	@brief MCP4725 DAC library example file. IsConnected.
+	@note
+	This file carries out Connection test to see if DAC on the I2C bus.
+	Output to Serial monitor 38400 baud rate 
+
+*/
 
 // Libraries
-#include <stdio.h>
-#include "pico/stdlib.h"
 #include "mcp4725/mcp4725.hpp"
 
 // Definations
 #define DAC_REF_VOLTAGE 3.3  // Volts DAC supply-reference voltage
 
 // Setup
-MCP4725 myDAC(DAC_REF_VOLTAGE);
+MCP4725_PICO myDAC(DAC_REF_VOLTAGE);
 uint16_t TestCount = 0;
 
-// Main
+/*!
+	@brief The MAIN loop function, isConnected example file
+	@return  Program Exit code
+*/
 int main () {
 	// Serial port setup
 	busy_wait_ms(500);
