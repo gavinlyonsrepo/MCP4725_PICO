@@ -21,8 +21,8 @@ MCP4725_PICO::MCP4725_PICO(float refV)
 	@param addr I2C address 8 bit address 0x6?.
 	@param i2c_type I2C instance of port, IC20 or I2C1.
 	@param CLKspeed I2C Bus Clock speed in Kbit/s. see 7.1 datasheet
-	@param SDA I2C Data GPIO
-	@param SCLK I2C Clock GPIO
+	@param SDApin I2C Data GPIO
+	@param SCLKpin I2C Clock GPIO
 	@return  true if success , false for failure
 */
 bool MCP4725_PICO::begin(MCP4725_I2C_Addr_e addr, i2c_inst_t* i2c_type, uint16_t CLKspeed, uint8_t SDApin, uint8_t SCLKpin)
@@ -80,7 +80,6 @@ bool MCP4725_PICO::isConnected()
 	@brief Sets the reference voltage. 
 	@param voltage the reference voltage to be set, called from constructor.
 */
-
 void MCP4725_PICO::setReferenceVoltage(float voltage)
 {
 	if (voltage == 0)
@@ -101,7 +100,7 @@ float MCP4725_PICO::getReferenceVoltage(){return _refVoltage;}
 	@brief Set voltage out based on DAC input code. 
 	@param InputCode 0 to MCP4725_MAX_VALUE.
 	@param mode MCP4725DAC mode, see enum MCP4725_CmdType_e.
-	@param PowerType MCP4725DAC power type, see enum MCP4725_PowerType_e
+	@param powerType MCP4725DAC power type, see enum MCP4725_PowerType_e
 	@return  output of writeCommand method, true for success, false for failure.
 */
 bool MCP4725_PICO::setInputCode(uint16_t InputCode, MCP4725_CmdType_e mode, MCP4725_PowerDownType_e powerType)
@@ -119,7 +118,7 @@ bool MCP4725_PICO::setInputCode(uint16_t InputCode, MCP4725_CmdType_e mode, MCP4
 	@brief Set voltage out based on voltage input in volts. 
 	@param voltage  0 to_MCP4725_REFERENCE_VOLTAGE, voltage out
 	@param mode MCP4725DAC mode, see enum MCP4725_CmdType_e.
-	@param PowerType MCP4725DAC power type, see enum MCP4725_PowerType_e
+	@param powerType MCP4725DAC power type, see enum MCP4725_PowerType_e
 	@return  output of writeCommand method, true for success, false for failure.
 */
 bool MCP4725_PICO::setVoltage(float voltage, MCP4725_CmdType_e mode, MCP4725_PowerDownType_e powerType)
