@@ -27,7 +27,6 @@ MCP4725_PICO::MCP4725_PICO(float refV)
 */
 bool MCP4725_PICO::begin(MCP4725_I2C_Addr_e addr, i2c_inst_t* i2c_type, uint16_t CLKspeed, uint8_t SDApin, uint8_t SCLKpin)
 {
-	uint8_t rxData = 0;
 
 	 // init I2c pins and interface
 	_i2cAddress  = addr;
