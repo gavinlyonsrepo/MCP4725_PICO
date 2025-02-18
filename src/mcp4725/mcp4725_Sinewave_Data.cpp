@@ -4,7 +4,7 @@
 	@brief Data file for MCP4725 Sinewave generation. 
 */
 
-#include "../include/mcp4725/mcp4725_Sinewave_Data.hpp"
+#include "../../include/mcp4725/mcp4725_Sinewave_Data.hpp"
 
 
 #if SINEWAVE_RES == 512 //9-bit sine wave

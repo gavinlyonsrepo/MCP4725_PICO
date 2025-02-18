@@ -4,7 +4,7 @@
 	@brief    MCP4725 DAC library cpp file.
 */
 
-#include "../include/mcp4725/mcp4725.hpp"
+#include "../../include/mcp4725/mcp4725.hpp"
 
 
 /*!
@@ -25,7 +25,7 @@ MCP4725_PICO::MCP4725_PICO(float refV)
 	@param SCLKpin I2C Clock GPIO
 	@return  true if success , false for failure
 */
-bool MCP4725_PICO::begin(MCP4725_I2C_Addr_e addr, i2c_inst_t* i2c_type, uint16_t CLKspeed, uint8_t SDApin, uint8_t SCLKpin)
+bool MCP4725_PICO::begin(MCP4725_I2C_Addr_e addr, i2c_inst_t* i2c_type, uint16_t CLKspeed, uint8_t SDApin, uint8_t SCLKpin, uint32_t I2C_timeout)
 {
 
 	 // init I2c pins and interface
@@ -34,6 +34,8 @@ bool MCP4725_PICO::begin(MCP4725_I2C_Addr_e addr, i2c_inst_t* i2c_type, uint16_t
 	_SClkPin = SCLKpin;
 	_SDataPin = SDApin;
 	_CLKSpeed = CLKspeed;
+	_I2C_Delay = I2C_timeout;
+
 	gpio_set_function(_SDataPin, GPIO_FUNC_I2C);
 	gpio_set_function(_SClkPin, GPIO_FUNC_I2C);
 	gpio_pull_up(_SDataPin);
@@ -63,7 +65,7 @@ bool MCP4725_PICO::isConnected()
 	int ReturnCode = 0;
 	uint8_t rxData = 0;
 	// check connection?
-	ReturnCode = i2c_read_timeout_us(_i2c, _i2cAddress , &rxData, 1, false, MCP4725_I2C_DELAY);
+	ReturnCode = i2c_read_timeout_us(_i2c, _i2cAddress , &rxData, 1, false, _I2C_Delay );
 	if (ReturnCode < 1){ // no bytes read back from device or error issued
 		if (_serialDebug == true)
 		{
@@ -82,11 +84,11 @@ bool MCP4725_PICO::isConnected()
 void MCP4725_PICO::setReferenceVoltage(float voltage)
 {
 	if (voltage == 0)
-		_refVoltage = MCP4725_REFERENCE_VOLTAGE;
+		_refVoltage = _MCP4725_REFERENCE_VOLTAGE;
 	else
 		_refVoltage = voltage;
 
-	_bitsPerVolt = (float)MCP4725_STEPS / _refVoltage;
+	_bitsPerVolt = (float)_MCP4725_STEPS / _refVoltage;
 }
 
 /*!
@@ -106,8 +108,8 @@ bool MCP4725_PICO::setInputCode(uint16_t InputCode, MCP4725_CmdType_e mode, MCP4
 {
 	if (_safetyCheck  == true)
 	{
-		if (InputCode > MCP4725_MAX_VALUE)
-			InputCode = MCP4725_MAX_VALUE;
+		if (InputCode > _MCP4725_MAX_VALUE)
+			InputCode = _MCP4725_MAX_VALUE;
 	}
 
 	return writeCommand(InputCode, mode, powerType);
@@ -129,7 +131,7 @@ bool MCP4725_PICO::setVoltage(float voltage, MCP4725_CmdType_e mode, MCP4725_Pow
 	if (_safetyCheck  == true)
 	{
 		if (voltage >= _refVoltage)
-			voltageValue = MCP4725_MAX_VALUE;
+			voltageValue = _MCP4725_MAX_VALUE;
 		else if (voltage <= 0)
 			voltageValue = 0; //make sure value never below zero
 		else
@@ -153,7 +155,7 @@ uint16_t MCP4725_PICO::getInputCode()
 	uint16_t inputCode = readRegister(MCP4725_ReadDACReg);
 	// InputCode = D11,D10,D9,D8,D7,D6,D5,D4, D3,D2,D1,D0,x,x,x,x
 
-	if (inputCode != MCP4725_ERROR)
+	if (inputCode != _MCP4725_ERROR)
 		return inputCode >> 4; //0,0,0,0,D11,D10,D9,D8,  D7,D6,D5,D4,D3,D2,D1,D0
 	else 
 		return inputCode; // i2c Error return 0xFFFF
@@ -167,7 +169,7 @@ uint16_t MCP4725_PICO::getInputCode()
 float MCP4725_PICO::getVoltage()
 {
 	float InputCode = getInputCode();
-	if (InputCode != MCP4725_ERROR) 
+	if (InputCode != _MCP4725_ERROR) 
 		return InputCode / _bitsPerVolt;
 	else
 		return InputCode; // i2c Error return 0xFFFF
@@ -182,7 +184,7 @@ uint16_t MCP4725_PICO::getStoredInputCode()
 	uint16_t inputCode = readRegister(MCP4725_ReadEEPROM); 
 	//InputCode = x,PD1,PD0,x,D11,D10,D9,D8, D7,D6,D5,D4,D3,D2,D1,D0
 
-	if (inputCode != MCP4725_ERROR) 
+	if (inputCode != _MCP4725_ERROR) 
 		return inputCode & 0x0FFF;  //0,0,0,0,D11,D10,D9,D8, D7,D6,D5,D4,D3,D2,D1,D0
 	else													
 		return inputCode; // i2c Error return 0xFFFF
@@ -197,7 +199,7 @@ float MCP4725_PICO::getStoredVoltage()
 {
 	float InputCode = getStoredInputCode();
 
-	if (InputCode != MCP4725_ERROR) 
+	if (InputCode != _MCP4725_ERROR) 
 		return InputCode / _bitsPerVolt;
 	else
 		return InputCode;
@@ -213,7 +215,7 @@ uint16_t MCP4725_PICO::getPowerType()
 	uint16_t powerTypeValue = readRegister(MCP4725_ReadSettings); 
 	//powerTypeValue = BSY,POR,xx,xx,xx,PD1,PD0,xx
 
-	if (powerTypeValue != MCP4725_ERROR){
+	if (powerTypeValue != _MCP4725_ERROR){
 		powerTypeValue &= 0x0006;   //00,00,00,00,00,PD1,PD0,00
 		return powerTypeValue >> 1; //00,00,00,00,00,00,PD1,PD0
 	}else{
@@ -232,7 +234,7 @@ uint16_t MCP4725_PICO::getStoredPowerType()
 	uint16_t powerTypeValue = readRegister(MCP4725_ReadEEPROM); 
 	//powerTypeValue = x,PD1,PD0,xx,D11,D10,D9,D8,D7,D6,D5,D4,D3,D2,D1,D0
 
-	if (powerTypeValue != MCP4725_ERROR)
+	if (powerTypeValue != _MCP4725_ERROR)
 	{
 		powerTypeValue = powerTypeValue << 1;  //PD1,PD0,xx,D11,D10,D9,D8,D7,D6,D5,D4,D3,D2,D1,D0,00
 		return  powerTypeValue >> 14; //00,00,00,00,00,00,00,00,00,00,00,00,00,00,PD1,PD0
@@ -253,7 +255,7 @@ bool MCP4725_PICO::getEEPROMBusyFlag()
 	uint16_t registerValue = readRegister(MCP4725_ReadSettings); 
 	//register value = BSY,POR,xx,xx,xx,PD1,PD0,xx
 	bool ReturnValue = false;
-	if (registerValue != MCP4725_ERROR)
+	if (registerValue != _MCP4725_ERROR)
 	{
 		ReturnValue = ((registerValue >> 7) & 0x01);
 		return ReturnValue; //1 - Not Busy, 0 - Busy
@@ -286,7 +288,7 @@ bool MCP4725_PICO::writeCommand(uint16_t inputCode, MCP4725_CmdType_e mode, MCP4
 			highByte = (uint8_t)((inputCode >> 8) & 0x00FF);
 			dataBuffer[0] = mode | (powerType << 4) | highByte; //C2,C1,PD1,PD0,D11,D10,D9,D8
   			dataBuffer[1] = lowByte;                            //D7,D6,D5,D4,D3,D2,D1,D0
-			ReturnCode = i2c_write_timeout_us(_i2c, _i2cAddress, dataBuffer, 2 , false, MCP4725_I2C_DELAY);
+			ReturnCode = i2c_write_timeout_us(_i2c, _i2cAddress, dataBuffer, 2 , false, _I2C_Delay );
 			if (ReturnCode < 1)
 			{
 				if (_serialDebug == true)
@@ -310,7 +312,7 @@ bool MCP4725_PICO::writeCommand(uint16_t inputCode, MCP4725_CmdType_e mode, MCP4
 			dataBuffer[0] = mode | (powerType << 1); // C2,C1,C0,x,x,PD1,PD0,x
   			dataBuffer[1] = highByte;               // D11,D10,D9,D8,D7,D6,D5,D4
 			dataBuffer[2] = lowByte;                // D3,D2,D1,D0,x,x,x,x
-			ReturnCode = i2c_write_timeout_us(_i2c, _i2cAddress, dataBuffer, 3 , false, MCP4725_I2C_DELAY);
+			ReturnCode = i2c_write_timeout_us(_i2c, _i2cAddress, dataBuffer, 3 , false, _I2C_Delay );
 			if (ReturnCode < 1)
 			{
 				if (_serialDebug == true)
@@ -328,10 +330,10 @@ bool MCP4725_PICO::writeCommand(uint16_t inputCode, MCP4725_CmdType_e mode, MCP4
 	{
 		if (getEEPROMBusyFlag() == true)
 			return true;
-		busy_wait_ms(MCP4725_EEPROM_WRITE_TIME); //typical EEPROM write time 25 mSec
+		busy_wait_ms(_eepromWriteTime); //typical EEPROM write time 25 mSec
 		if (getEEPROMBusyFlag() == true)
 			 return true;
-		busy_wait_ms(MCP4725_EEPROM_WRITE_TIME); //maximum EEPROM write time 25*2 mSec
+		busy_wait_ms(_eepromWriteTime); //maximum EEPROM write time 25*2 mSec
 	}
 
 	return true;
@@ -359,18 +361,18 @@ uint16_t MCP4725_PICO::readRegister(MCP4725_ReadType_e readType)
 	switch (readType)
 	{
 		case MCP4725_ReadSettings: // Read one byte settings
-			ReturnCode = i2c_read_timeout_us(_i2c, _i2cAddress, dataBuffer, 1, false, MCP4725_I2C_DELAY);
+			ReturnCode = i2c_read_timeout_us(_i2c, _i2cAddress, dataBuffer, 1, false, _I2C_Delay );
 			dataWord = dataBuffer[0];
 			break;
 
 		case MCP4725_ReadDACReg: // Read 3 bytes  DAC register data, skip first 1 don't care
-			ReturnCode = i2c_read_timeout_us(_i2c, _i2cAddress, dataBuffer, 3, false, MCP4725_I2C_DELAY);
+			ReturnCode = i2c_read_timeout_us(_i2c, _i2cAddress, dataBuffer, 3, false, _I2C_Delay );
 			dataWord = dataBuffer[1];
 			dataWord = (dataWord << 8) | dataBuffer[2];
 			break;
 
 		case MCP4725_ReadEEPROM: // Read 5 bytes EEPROM data , first 3 don't care
-			ReturnCode = i2c_read_timeout_us(_i2c, _i2cAddress, dataBuffer, 5, false, MCP4725_I2C_DELAY);
+			ReturnCode = i2c_read_timeout_us(_i2c, _i2cAddress, dataBuffer, 5, false, _I2C_Delay );
 			dataWord = dataBuffer[3];
 			dataWord = (dataWord << 8) | dataBuffer[4];
 			break;
@@ -384,7 +386,7 @@ uint16_t MCP4725_PICO::readRegister(MCP4725_ReadType_e readType)
 			printf("Tranmission Code :: %d\r\n", ReturnCode);
 			busy_wait_ms(100);
 		}
-	 	return MCP4725_ERROR;
+	 	return _MCP4725_ERROR;
  	 }else{
 		return dataWord;
  	}
@@ -435,7 +437,7 @@ bool MCP4725_PICO::GeneralCall(MCP4725_GeneralCallType_e typeCall){
 	
 	dataBuffer[0] = (uint8_t)typeCall;
 	// Note I2c address is MCP4725_GENERAL_CALL_ADDRESS
-	ReturnCode = i2c_write_timeout_us(_i2c, (uint8_t)MCP4725_GeneralCallAddress, dataBuffer, 1 , false, MCP4725_I2C_DELAY);
+	ReturnCode = i2c_write_timeout_us(_i2c, (uint8_t)MCP4725_GeneralCallAddress, dataBuffer, 1 , false, _I2C_Delay );
 	
 	if (ReturnCode < 1)
 	{ // no bytes read back from device or error issued
@@ -451,4 +453,22 @@ bool MCP4725_PICO::GeneralCall(MCP4725_GeneralCallType_e typeCall){
  	}
 }
 
+/*! @brief get the library version number */
+uint16_t MCP4725_PICO::getLibraryVersionNumber(void){return _LibVersion;}
+
+
+/*!
+	@brief Gets EEPROM write time
+	@return mSec Memory write time, maximum 50 mSec  
+*/
+uint16_t MCP4725_PICO::getEEPROMwriteTime(){return _eepromWriteTime;}
+
+/*!
+	@brief  Sets the EEPROM write time
+	@param WriteTime mSec Memory write time, maximum 50 mSec  
+*/
+void MCP4725_PICO::setEEPROMwriteTime(uint16_t WriteTime)
+{
+	_eepromWriteTime =  WriteTime;
+}
 // ------------------ EOF ------------------------

@@ -26,8 +26,12 @@
 #include "pico/stdlib.h"
 #include "mcp4725/mcp4725.hpp"
 
-// Definations
+// test setup
 #define DAC_REF_VOLTAGE 3.3  // Volts DAC supply-reference voltage
+uint16_t Speed = 100;		 // I2C speed in Khz
+uint8_t Data = 12;			 // I2C GPIO for data line
+uint8_t Clock = 13;			 // I2C GPIO for Clock line
+uint32_t Timeout = 50000; // I2C timeout delay in uS.
 
 // Setup
 MCP4725_PICO myDAC(DAC_REF_VOLTAGE);
@@ -47,7 +51,7 @@ int main () {
 	busy_wait_ms(1000);
 	printf("MCP4725_PICO : Demo Test example.\r\n");
 	
-	if (!myDAC.begin(MCP4725A0_Addr_A00 , i2c1, 100, 18 , 19))
+	if (!myDAC.begin(myDAC.MCP4725A0_Addr_A00, i2c0, Speed, Data, Clock, Timeout))
 	{
 		printf("MCP4725 : Failed to initialize DAC.!\r\n");
 		while(1){};
@@ -59,7 +63,7 @@ int main () {
 	printDACSettings();
 	
 	// Set voltage test 1
-	if (myDAC.setInputCode(4090, MCP4725_FastMode, MCP4725_PowerDown_Off))
+	if (myDAC.setInputCode(4090, myDAC.MCP4725_FastMode, myDAC.MCP4725_PowerDown_Off))
 		printf("\n 1 Set max value & normal mode, Vout = 3.3 \n");
 	else
 		printf("I2C error\n");
@@ -67,28 +71,28 @@ int main () {
 	busy_wait_ms(5000);
 	
 	// Power down test 2 
-	if (myDAC.setInputCode(2048, MCP4725_FastMode, MCP4725_PowerDown_1kOhm) == true)
+	if (myDAC.setInputCode(2048, myDAC.MCP4725_FastMode, myDAC.MCP4725_PowerDown_1kOhm) == true)
 		printf("\n 2 Set max value & normal mode, Vout = 1.65 but off \n");
 	else
 		printf("I2C error\n");
 	busy_wait_ms(5000);
 
 	// Power down test 3 
-	if(myDAC.setVoltage(0.9, MCP4725_RegisterMode, MCP4725_PowerDown_100kOhm)== true)
+	if(myDAC.setVoltage(0.9, myDAC.MCP4725_RegisterMode, myDAC.MCP4725_PowerDown_100kOhm)== true)
 		printf("\n 3 Set max value & normal mode, Vout = 900 mV but off \n");
 	else
 		printf("I2C error\n");
 	busy_wait_ms(5000);
 
 	// Wake up the device test 4
-	if (myDAC.GeneralCall(MCP4725_GeneralCallWakeUp) == true)
+	if (myDAC.GeneralCall(myDAC.MCP4725_GeneralCallWakeUp) == true)
 		printf("\n 4 Device Wake up vout = 900mV \n");
 	else 
 		printf("I2C error\n");
 	busy_wait_ms(5000);
 
 	// Set voltage test 5
-	if(myDAC.setInputCode(4090, MCP4725_FastMode, MCP4725_PowerDown_Off) == true)
+	if(myDAC.setInputCode(4090, myDAC.MCP4725_FastMode, myDAC.MCP4725_PowerDown_Off) == true)
 		printf("\n 5 Set max value & normal mode, Vout = 3.3 \n");
 	else
 		printf("I2C error\n");
@@ -98,28 +102,28 @@ int main () {
 	printDACSettings();
 
 	// Set Voltage and power mode EEPROM test 6 
-	if(myDAC.setVoltage(1.0, MCP4725_EEPROM_Mode, MCP4725_PowerDown_Off) == true )
+	if(myDAC.setVoltage(1.0, myDAC.MCP4725_EEPROM_Mode, myDAC.MCP4725_PowerDown_Off) == true )
 		printf("\n 6 Program EEPROM and read out 1.0 volt \n");
 	else
 		printf("I2C error\n");
 	busy_wait_ms(5000);
 
 	// Set Voltage to 3.3 Set Voltage test 6b 
-	if(myDAC.setInputCode(4090, MCP4725_FastMode, MCP4725_PowerDown_Off) == true )
+	if(myDAC.setInputCode(4090, myDAC.MCP4725_FastMode, myDAC.MCP4725_PowerDown_Off) == true )
 		printf("\n 6b set volt to 3.3  \n");
 	else
 		printf("I2C error\n");
 	busy_wait_ms(5000);
 
 	// reset the device with voltage = 1.0 test6c
-	if (myDAC.GeneralCall(MCP4725_GeneralCallReset) == true)
+	if (myDAC.GeneralCall(myDAC.MCP4725_GeneralCallReset) == true)
 		printf("\n 6c set volt to 1.0 from EEPROM \n");
 	else
 		printf("I2C error\n");
 	busy_wait_ms(5000);
 	
 	// Reset EEPROM  Test 7 
-	if (myDAC.setVoltage(0.0, MCP4725_EEPROM_Mode,  MCP4725_PowerDown_Off) == true)
+	if (myDAC.setVoltage(0.0, myDAC.MCP4725_EEPROM_Mode,  myDAC.MCP4725_PowerDown_Off) == true)
 		printf("\n 7 Program EEPROM and read out 0.0 volt \n");
 	else
 		printf("I2C error\n");
@@ -140,5 +144,5 @@ void printDACSettings(){
 	printf("DAC input code in EEPROM : %u \r\n", myDAC.getStoredInputCode());
 	printf("DAC Voltage in EEPROM : %f \r\n", myDAC.getStoredVoltage());
 	printf("Power Type Current : %u \r\n", myDAC.getPowerType());
-	printf("Power Type in EEPROM : %u \r\n\n", myDAC.getStoredPowerType());
+	printf("Power Type in EEPROM : %u \r\n", myDAC.getStoredPowerType());
 }
